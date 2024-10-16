@@ -1,44 +1,45 @@
-%%writefile app.py
-import streamlit as st
 import pandas as pd
 
-st.title("Expense Splitter")
+# Step 1: Input names of friends (comma-separated)
+friends = input("Enter names of friends (comma-separated): ")
+friends_list = [name.strip() for name in friends.split(",")]
 
-# Input for names of friends
-friends = st.text_input("Enter names of friends (comma-separated):")
-friends_list = [name.strip() for name in friends.split(",") if name.strip()]
-
-# Input for expenses
+# Step 2: Initialize a list to store expenses
 expense_entries = []
-if st.button("Add Expense"):
-    expense_description = st.text_input("Expense Description")
-    amount = st.number_input("Amount", min_value=0.0)
-    selected_friends = st.multiselect("Select Friends", friends_list)
 
-    if expense_description and selected_friends:
-        expense_entries.append({
-            "Description": expense_description,
-            "Amount": amount,
-            "Paid By": selected_friends
-        })
-        st.success("Expense added!")
+# Step 3: Adding expenses
+while True:
+    expense_description = input("Enter expense description (or type 'done' to finish): ")
+    if expense_description.lower() == 'done':
+        break
 
-# Show expenses
-if expense_entries:
-    st.write("### Expenses")
-    expense_df = pd.DataFrame(expense_entries)
-    st.dataframe(expense_df)
+    amount = float(input("Enter amount: "))
+    
+    print("Friends List:", friends_list)
+    paid_by = input("Who paid for this? (comma-separated names from the list): ")
+    paid_by_list = [name.strip() for name in paid_by.split(",")]
 
-    # Calculate who owes what
-    total_expenses = {}
-    for entry in expense_entries:
-        amount_per_person = entry["Amount"] / len(entry["Paid By"])
-        for friend in friends_list:
-            if friend not in total_expenses:
-                total_expenses[friend] = 0
-        for payer in entry["Paid By"]:
-            total_expenses[payer] += amount_per_person
+    expense_entries.append({
+        "Description": expense_description,
+        "Amount": amount,
+        "Paid By": paid_by_list
+    })
 
-    st.write("### Summary Report")
-    for friend, total in total_expenses.items():
-        st.write(f"{friend} owes: ${total:.2f}")
+# Step 4: Display all expenses
+expense_df = pd.DataFrame(expense_entries)
+print("\nList of Expenses:")
+print(expense_df)
+
+# Step 5: Calculate how much each person owes
+total_expenses = {friend: 0 for friend in friends_list}
+
+for entry in expense_entries:
+    amount_per_person = entry["Amount"] / len(entry["Paid By"])
+    for payer in entry["Paid By"]:
+        total_expenses[payer] += amount_per_person
+
+# Step 6: Display the summary report
+print("\nSummary Report:")
+for friend, total in total_expenses.items():
+    print(f"{friend} owes: ${total:.2f}")
+
